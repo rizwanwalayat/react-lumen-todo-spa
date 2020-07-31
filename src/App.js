@@ -1,26 +1,49 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react';
+import Todos from './components/Todos'
+import Navbar from './components/Navbar'
+import { Redirect, BrowserRouter, Route, Switch} from 'react-router-dom'
+import Login from './components/auth/Login'
+import Register from './components/auth/Register'
+import Logout from './components/auth/Logout'
+import EditTodo from './components/EditTodo'
+import axios from 'axios'
+import {connect} from 'react-redux'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+
+class App extends Component {
+  
+  constructor(props) {
+    super(props);
+    axios.defaults.baseURL = 'http://localhost:8000';
+  }
+  render(){
+    const isLoggedIn = this.props.isLoggedIn;
+    return (
+      <BrowserRouter>
+        <div className="App container">
+          <Navbar/>
+          <Switch>
+            <Route exact path="/"> {isLoggedIn ? <Redirect to="/todos" /> : <Redirect to="/login" />}</Route>
+            <Route exact path='/todos'> {isLoggedIn ? <Todos /> : <Redirect to="/login"/>}</Route>
+            <Route path='/todos/edit/:todo_id' component={isLoggedIn ? EditTodo : Login} /> 
+            <Route path="/login"> {isLoggedIn ? <Redirect to="/todos" /> : <Login />}</Route>
+            <Route path="/logout"> {isLoggedIn ? <Logout/> : <Redirect to="/login"/>}</Route>
+
+            <Route path='/register' component={Register} />
+          </Switch>
+
+        </div>
+      </BrowserRouter>
+    );
+  }
 }
 
-export default App;
+const mapStateToProps = (state) => {
+  return {
+      isLoggedIn: state.isLoggedIn
+  }
+}
+
+
+export default connect(mapStateToProps)(App)
